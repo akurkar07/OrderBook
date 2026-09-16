@@ -1,3 +1,0 @@
-C:\Users\Alex\AppData\Local\Microsoft\WinGet\Packages\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\mingw64\bin\cmake.exe -E rm -f CMakeFiles\benchmark_order_book.dir/objects.a
-C:\MinGW\bin\ar.exe qc CMakeFiles\benchmark_order_book.dir/objects.a @CMakeFiles\benchmark_order_book.dir\objects1.rsp
-C:\MinGW\bin\c++.exe -O3 -DNDEBUG -Wl,--whole-archive CMakeFiles\benchmark_order_book.dir/objects.a -Wl,--no-whole-archive -o benchmark_order_book.exe -Wl,--out-implib,libbenchmark_order_book.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\benchmark_order_book.dir\linkLibs.rsp

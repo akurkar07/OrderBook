@@ -1,3 +1,0 @@
-C:\Users\Alex\AppData\Local\Microsoft\WinGet\Packages\BrechtSanders.WinLibs.POSIX.UCRT_Microsoft.Winget.Source_8wekyb3d8bbwe\mingw64\bin\cmake.exe -E rm -f CMakeFiles\test_price_level.dir/objects.a
-C:\MinGW\bin\ar.exe qc CMakeFiles\test_price_level.dir/objects.a @CMakeFiles\test_price_level.dir\objects1.rsp
-C:\MinGW\bin\c++.exe -O3 -DNDEBUG -Wl,--whole-archive CMakeFiles\test_price_level.dir/objects.a -Wl,--no-whole-archive -o test_price_level.exe -Wl,--out-implib,libtest_price_level.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\test_price_level.dir\linkLibs.rsp

@@ -1,2 +1,0 @@
-C:\MinGW\bin\ar.exe qc liborderbook_lib.a CMakeFiles/orderbook_lib.dir/src/order_book.cpp.obj CMakeFiles/orderbook_lib.dir/src/price_level.cpp.obj
-C:\MinGW\bin\ranlib.exe liborderbook_lib.a
