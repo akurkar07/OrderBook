@@ -1,0 +1,12 @@
+build/
+build_fresh/
+build_new/
+*.exe
+*.a
+*.o
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+CTestTestfile.cmake
+Testing/
