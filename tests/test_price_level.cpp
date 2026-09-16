@@ -48,10 +48,15 @@ void test_price_level_front() {
     level.add_order(order1);
     level.add_order(order2);
 
-    const Order& front = level.front();
-    (void)front;  // Used to verify it compiles
-    assert(front.id == 1);
-    assert(front.quantity == 10);
+    // Test const access
+    const PriceLevel& constLevel = level;
+    assert(constLevel.front().id == 1);
+    assert(constLevel.front().quantity == 10);
+
+    // Test reduce_quantity through non-const front
+    level.reduce_quantity(3);
+    assert(level.front().quantity == 7);
+    assert(level.total_quantity() == 12);
 }
 
 void test_price_level_empty() {

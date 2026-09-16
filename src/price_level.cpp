@@ -22,6 +22,14 @@ bool PriceLevel::remove_order(OrderID order_id) {
     return false;
 }
 
+void PriceLevel::reduce_quantity(Quantity amount) {
+    // Reduce quantity of front order (used during matching)
+    if (!queue_.empty()) {
+        queue_.front().quantity -= amount;
+        total_quantity_ -= amount;
+    }
+}
+
 bool PriceLevel::empty() const {
     return queue_.empty();
 }
@@ -35,6 +43,10 @@ Price PriceLevel::price() const {
 }
 
 const Order& PriceLevel::front() const {
+    return queue_.front();
+}
+
+Order& PriceLevel::front() {
     return queue_.front();
 }
 

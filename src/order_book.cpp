@@ -80,16 +80,18 @@ Fills OrderBook::match_against_buy_levels(Order& order) {
     Fills fills;
 
     // Sell order matches against buy levels where buy price >= sell price
-    // Best buy is the highest price (rbegin)
-    for (auto it = buy_levels_.rbegin(); it != buy_levels_.rend() && order.quantity > 0;) {
+    // Best buy is the highest price (last element)
+    while (!buy_levels_.empty() && order.quantity > 0) {
+        auto it = std::prev(buy_levels_.end());  // highest buy price
         PriceLevel& level = it->second;
+
         if (level.price() < order.price && order.type == OrderType::Limit) {
             break;  // No more matching prices
         }
 
         // Match against orders at this level
         while (!level.empty() && order.quantity > 0) {
-            Order& resting = const_cast<Order&>(level.front());
+            Order& resting = level.front();
             Quantity fill_qty = std::min(order.quantity, resting.quantity);
 
             Fill fill;
@@ -110,17 +112,9 @@ Fills OrderBook::match_against_buy_levels(Order& order) {
             }
         }
 
+        // Remove empty level
         if (level.empty()) {
-            // Remove empty level - need to convert reverse iterator to forward
-            auto forward_it = buy_levels_.find(level.price());
-            if (forward_it != buy_levels_.end()) {
-                buy_levels_.erase(forward_it);
-            }
-            break;  // Map was modified, loop will re-evaluate
-        }
-
-        if (order.quantity > 0) {
-            ++it;
+            buy_levels_.erase(it);
         }
     }
 
@@ -131,16 +125,18 @@ Fills OrderBook::match_against_sell_levels(Order& order) {
     Fills fills;
 
     // Buy order matches against sell levels where sell price <= buy price
-    // Best sell is the lowest price (begin)
-    for (auto it = sell_levels_.begin(); it != sell_levels_.end() && order.quantity > 0;) {
+    // Best sell is the lowest price (first element)
+    while (!sell_levels_.empty() && order.quantity > 0) {
+        auto it = sell_levels_.begin();  // lowest sell price
         PriceLevel& level = it->second;
+
         if (level.price() > order.price && order.type == OrderType::Limit) {
             break;  // No more matching prices
         }
 
         // Match against orders at this level
         while (!level.empty() && order.quantity > 0) {
-            Order& resting = const_cast<Order&>(level.front());
+            Order& resting = level.front();
             Quantity fill_qty = std::min(order.quantity, resting.quantity);
 
             Fill fill;
@@ -161,11 +157,9 @@ Fills OrderBook::match_against_sell_levels(Order& order) {
             }
         }
 
+        // Remove empty level
         if (level.empty()) {
-            // Remove empty level
-            it = sell_levels_.erase(it);
-        } else if (order.quantity > 0) {
-            ++it;
+            sell_levels_.erase(it);
         }
     }
 

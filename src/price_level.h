@@ -3,7 +3,6 @@
 
 #include "order.h"
 #include <list>
-#include <map>
 
 namespace orderbook {
 
@@ -13,12 +12,14 @@ public:
 
     void add_order(const Order& order);
     bool remove_order(OrderID order_id);
+    void reduce_quantity(Quantity amount);
     bool empty() const;
 
     Quantity total_quantity() const;
     Price price() const;
 
     const Order& front() const;
+    Order& front();
 
 private:
     Price price_;
