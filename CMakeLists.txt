@@ -35,10 +35,17 @@ target_link_libraries(test_matching PRIVATE orderbook_lib)
 add_executable(test_robustness tests/test_robustness.cpp)
 target_link_libraries(test_robustness PRIVATE orderbook_lib)
 
+add_executable(test_reference_order_book tests/test_reference_order_book.cpp)
+target_include_directories(test_reference_order_book PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/reference
+)
+target_link_libraries(test_reference_order_book PRIVATE orderbook_lib)
+
 add_test(NAME test_order_book COMMAND test_order_book)
 add_test(NAME test_price_level COMMAND test_price_level)
 add_test(NAME test_matching COMMAND test_matching)
 add_test(NAME test_robustness COMMAND test_robustness)
+add_test(NAME test_reference_order_book COMMAND test_reference_order_book)
 
 # Benchmarks
 add_executable(benchmark_order_book benchmarks/benchmark_order_book.cpp)
