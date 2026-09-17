@@ -1,4 +1,6 @@
 #include <iostream>
+#include <limits>
+#include <stdexcept>
 
 #include "price_level.h"
 #include "test_utils.h"
@@ -68,12 +70,32 @@ void test_price_level_empty() {
     CHECK(level.empty());
 }
 
+void test_price_level_quantity_overflow_is_rejected() {
+    PriceLevel level(100.0);
+    const Quantity max_quantity = std::numeric_limits<Quantity>::max();
+    level.add_order(Order(1, Side::Buy, OrderType::Limit, 100.0, max_quantity - 5));
+
+    bool threw = false;
+    try {
+        level.add_order(Order(2, Side::Buy, OrderType::Limit, 100.0, 10));
+    } catch (const std::overflow_error&) {
+        threw = true;
+    }
+
+    CHECK(threw);
+    CHECK(level.total_quantity() == max_quantity - 5);
+    CHECK(level.front().id == 1);
+    CHECK(level.front().quantity == max_quantity - 5);
+    CHECK(!level.remove_order(2));
+}
+
 int main() {
     test_price_level_add();
     test_price_level_remove();
     test_price_level_remove_nonexistent();
     test_price_level_front();
     test_price_level_empty();
+    test_price_level_quantity_overflow_is_rejected();
 
     std::cout << "All price level tests passed!" << std::endl;
     return 0;
