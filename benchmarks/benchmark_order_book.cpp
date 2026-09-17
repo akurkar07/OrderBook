@@ -10,13 +10,13 @@ int main() {
 
     constexpr int num_orders = 1000000;
 
-    auto start = std::chrono::high_resolution_clock::now();
+    auto start = std::chrono::steady_clock::now();
     for (int i = 0; i < num_orders; ++i) {
         Price price = 100.0 + (i % 20);
         Order order(i, Side::Buy, OrderType::Limit, price, 10);
         book.place_limit_order(order);
     }
-    auto end = std::chrono::high_resolution_clock::now();
+    auto end = std::chrono::steady_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
 
     double seconds = static_cast<double>(duration.count()) / 1'000'000'000.0;
