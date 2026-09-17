@@ -1,6 +1,7 @@
 #include "price_level.h"
 
 #include <algorithm>
+#include <cassert>
 
 namespace orderbook {
 
@@ -23,11 +24,18 @@ bool PriceLevel::remove_order(OrderID order_id) {
 }
 
 void PriceLevel::reduce_quantity(Quantity amount) {
-    // Reduce quantity of front order (used during matching)
-    if (!queue_.empty()) {
-        queue_.front().quantity -= amount;
-        total_quantity_ -= amount;
+    assert(!queue_.empty());
+    if (queue_.empty()) {
+        return;
     }
+
+    assert(amount <= queue_.front().quantity);
+    if (amount > queue_.front().quantity) {
+        return;
+    }
+
+    queue_.front().quantity -= amount;
+    total_quantity_ -= amount;
 }
 
 bool PriceLevel::empty() const {
@@ -43,10 +51,6 @@ Price PriceLevel::price() const {
 }
 
 const Order& PriceLevel::front() const {
-    return queue_.front();
-}
-
-Order& PriceLevel::front() {
     return queue_.front();
 }
 

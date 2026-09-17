@@ -14,6 +14,15 @@ void test_order_creation() {
     assert(order.quantity == 10);
 }
 
+void test_default_order_initialisation() {
+    Order order;
+    assert(order.id == 0);
+    assert(order.side == Side::Buy);
+    assert(order.type == OrderType::Limit);
+    assert(order.price == 0.0);
+    assert(order.quantity == 0);
+}
+
 void test_order_type_enum() {
     Order limit(1, Side::Buy, OrderType::Limit, 100.0, 10);
     Order market(2, Side::Sell, OrderType::Market, 0.0, 5);
@@ -32,6 +41,7 @@ void test_side_enum() {
 
 int main() {
     test_order_creation();
+    test_default_order_initialisation();
     test_order_type_enum();
     test_side_enum();
 

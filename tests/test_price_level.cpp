@@ -34,7 +34,6 @@ void test_price_level_remove() {
 void test_price_level_remove_nonexistent() {
     PriceLevel level(100.0);
     Order order(1, Side::Buy, OrderType::Limit, 100.0, 10);
-
     level.add_order(order);
     assert(!level.remove_order(999));
     assert(level.total_quantity() == 10);
@@ -48,12 +47,10 @@ void test_price_level_front() {
     level.add_order(order1);
     level.add_order(order2);
 
-    // Test const access
-    const PriceLevel& constLevel = level;
-    assert(constLevel.front().id == 1);
-    assert(constLevel.front().quantity == 10);
+    const PriceLevel& const_level = level;
+    assert(const_level.front().id == 1);
+    assert(const_level.front().quantity == 10);
 
-    // Test reduce_quantity through non-const front
     level.reduce_quantity(3);
     assert(level.front().quantity == 7);
     assert(level.total_quantity() == 12);

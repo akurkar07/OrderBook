@@ -1,8 +1,8 @@
 #ifndef ORDERBOOK_ORDER_H
 #define ORDERBOOK_ORDER_H
 
-#include <cstdint>
 #include <chrono>
+#include <cstdint>
 
 namespace orderbook {
 
@@ -22,12 +22,12 @@ enum class OrderType : uint8_t {
 };
 
 struct Order {
-    OrderID id;
-    Side side;
-    OrderType type;
-    Price price;
-    Quantity quantity;
-    Timestamp timestamp;
+    OrderID id{0};
+    Side side{Side::Buy};
+    OrderType type{OrderType::Limit};
+    Price price{0.0};
+    Quantity quantity{0};
+    Timestamp timestamp{};
 
     Order() = default;
 

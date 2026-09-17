@@ -1,11 +1,21 @@
 #include "order_book.h"
 
+#include <algorithm>
+#include <cmath>
+#include <iterator>
+
 namespace orderbook {
 
 OrderBook::OrderBook() : next_fill_id_(0) {}
 
 Fills OrderBook::place_limit_order(const Order& order) {
+    if (!std::isfinite(order.price) ||
+        order_id_to_price_.find(order.id) != order_id_to_price_.end()) {
+        return {};
+    }
+
     Order working_order = order;
+    working_order.type = OrderType::Limit;
     Fills fills;
 
     if (order.side == Side::Buy) {
@@ -33,7 +43,12 @@ Fills OrderBook::place_limit_order(const Order& order) {
 }
 
 Fills OrderBook::place_market_order(const Order& order) {
+    if (order_id_to_price_.find(order.id) != order_id_to_price_.end()) {
+        return {};
+    }
+
     Order working_order = order;
+    working_order.type = OrderType::Market;
     Fills fills;
 
     if (order.side == Side::Buy) {
@@ -53,7 +68,7 @@ bool OrderBook::cancel_order(OrderID order_id) {
     }
 
     Price price = it->second;
-    bool is_buy = order_is_buy_[order_id];
+    bool is_buy = order_is_buy_.at(order_id);
 
     auto& levels = is_buy ? buy_levels_ : sell_levels_;
     auto level_it = levels.find(price);
@@ -91,24 +106,25 @@ Fills OrderBook::match_against_buy_levels(Order& order) {
 
         // Match against orders at this level
         while (!level.empty() && order.quantity > 0) {
-            Order& resting = level.front();
+            const Order& resting = level.front();
+            OrderID resting_id = resting.id;
             Quantity fill_qty = std::min(order.quantity, resting.quantity);
 
             Fill fill;
             fill.id = next_fill_id_++;
-            fill.buy_order_id = resting.id;
+            fill.buy_order_id = resting_id;
             fill.sell_order_id = order.id;
             fill.price = level.price();
             fill.quantity = fill_qty;
             fills.push_back(fill);
 
             order.quantity -= fill_qty;
-            resting.quantity -= fill_qty;
+            level.reduce_quantity(fill_qty);
 
-            if (resting.quantity == 0) {
-                order_id_to_price_.erase(resting.id);
-                order_is_buy_.erase(resting.id);
-                level.remove_order(resting.id);
+            if (level.front().quantity == 0) {
+                order_id_to_price_.erase(resting_id);
+                order_is_buy_.erase(resting_id);
+                level.remove_order(resting_id);
             }
         }
 
@@ -136,24 +152,25 @@ Fills OrderBook::match_against_sell_levels(Order& order) {
 
         // Match against orders at this level
         while (!level.empty() && order.quantity > 0) {
-            Order& resting = level.front();
+            const Order& resting = level.front();
+            OrderID resting_id = resting.id;
             Quantity fill_qty = std::min(order.quantity, resting.quantity);
 
             Fill fill;
             fill.id = next_fill_id_++;
             fill.buy_order_id = order.id;
-            fill.sell_order_id = resting.id;
+            fill.sell_order_id = resting_id;
             fill.price = level.price();
             fill.quantity = fill_qty;
             fills.push_back(fill);
 
             order.quantity -= fill_qty;
-            resting.quantity -= fill_qty;
+            level.reduce_quantity(fill_qty);
 
-            if (resting.quantity == 0) {
-                order_id_to_price_.erase(resting.id);
-                order_is_buy_.erase(resting.id);
-                level.remove_order(resting.id);
+            if (level.front().quantity == 0) {
+                order_id_to_price_.erase(resting_id);
+                order_is_buy_.erase(resting_id);
+                level.remove_order(resting_id);
             }
         }
 
