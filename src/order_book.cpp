@@ -5,11 +5,27 @@
 #include <iterator>
 
 namespace orderbook {
+namespace {
+
+bool is_valid_side(Side side) {
+    return side == Side::Buy || side == Side::Sell;
+}
+
+bool is_valid_limit_order(const Order& order) {
+    return is_valid_side(order.side) && order.quantity > 0 &&
+           std::isfinite(order.price) && order.price > 0.0;
+}
+
+bool is_valid_market_order(const Order& order) {
+    return is_valid_side(order.side) && order.quantity > 0;
+}
+
+} // namespace
 
 OrderBook::OrderBook() : next_fill_id_(0) {}
 
 Fills OrderBook::place_limit_order(const Order& order) {
-    if (!std::isfinite(order.price) ||
+    if (!is_valid_limit_order(order) ||
         order_id_to_price_.find(order.id) != order_id_to_price_.end()) {
         return {};
     }
@@ -43,7 +59,8 @@ Fills OrderBook::place_limit_order(const Order& order) {
 }
 
 Fills OrderBook::place_market_order(const Order& order) {
-    if (order_id_to_price_.find(order.id) != order_id_to_price_.end()) {
+    if (!is_valid_market_order(order) ||
+        order_id_to_price_.find(order.id) != order_id_to_price_.end()) {
         return {};
     }
 
