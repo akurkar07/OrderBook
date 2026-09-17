@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <iomanip>
 #include <iostream>
+#include <iterator>
 #include <limits>
 #include <stdexcept>
 #include <string>
