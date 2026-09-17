@@ -139,6 +139,16 @@ void test_market_order_partial_fill() {
     CHECK(book.empty());
 }
 
+void test_market_order_empty_book() {
+    OrderBook book;
+    auto buy_fills = book.place_market_order(Order(1, Side::Buy, OrderType::Market, 0.0, 5));
+    auto sell_fills = book.place_market_order(Order(2, Side::Sell, OrderType::Market, 0.0, 5));
+
+    CHECK(buy_fills.empty());
+    CHECK(sell_fills.empty());
+    CHECK(book.empty());
+}
+
 void test_cancel_order() {
     OrderBook book;
     Order buy(1, Side::Buy, OrderType::Limit, 100.0, 10);
@@ -266,6 +276,73 @@ void test_non_finite_limit_price_is_rejected() {
     CHECK(book.empty());
 }
 
+void test_non_positive_limit_price_is_rejected() {
+    for (Price invalid_price : {0.0, -1.0}) {
+        OrderBook book;
+        book.place_limit_order(Order(1, Side::Buy, OrderType::Limit, 100.0, 5));
+
+        auto invalid_fills = book.place_limit_order(
+            Order(2, Side::Sell, OrderType::Limit, invalid_price, 5));
+        CHECK(invalid_fills.empty());
+
+        auto valid_fills = book.place_market_order(
+            Order(3, Side::Sell, OrderType::Market, 0.0, 5));
+        CHECK(valid_fills.size() == 1);
+        CHECK(valid_fills[0].buy_order_id == 1);
+        CHECK(valid_fills[0].quantity == 5);
+        CHECK(valid_fills[0].price == 100.0);
+        CHECK(book.empty());
+    }
+}
+
+void test_invalid_side_is_rejected() {
+    const Side invalid_side = static_cast<Side>(255);
+
+    {
+        OrderBook book;
+        book.place_limit_order(Order(1, Side::Sell, OrderType::Limit, 101.0, 5));
+
+        auto invalid_fills = book.place_limit_order(
+            Order(2, invalid_side, OrderType::Limit, 100.0, 5));
+        CHECK(invalid_fills.empty());
+
+        auto valid_fills = book.place_market_order(
+            Order(3, Side::Buy, OrderType::Market, 0.0, 5));
+        CHECK(valid_fills.size() == 1);
+        CHECK(valid_fills[0].sell_order_id == 1);
+        CHECK(valid_fills[0].price == 101.0);
+        CHECK(book.empty());
+    }
+
+    {
+        OrderBook book;
+        book.place_limit_order(Order(1, Side::Buy, OrderType::Limit, 100.0, 5));
+
+        auto invalid_fills = book.place_market_order(
+            Order(2, invalid_side, OrderType::Market, 0.0, 5));
+        CHECK(invalid_fills.empty());
+
+        auto valid_fills = book.place_market_order(
+            Order(3, Side::Sell, OrderType::Market, 0.0, 5));
+        CHECK(valid_fills.size() == 1);
+        CHECK(valid_fills[0].buy_order_id == 1);
+        CHECK(valid_fills[0].price == 100.0);
+        CHECK(book.empty());
+    }
+}
+
+void test_zero_quantity_orders_are_rejected() {
+    OrderBook book;
+    auto limit_fills = book.place_limit_order(
+        Order(1, Side::Buy, OrderType::Limit, 100.0, 0));
+    auto market_fills = book.place_market_order(
+        Order(2, Side::Sell, OrderType::Market, 0.0, 0));
+
+    CHECK(limit_fills.empty());
+    CHECK(market_fills.empty());
+    CHECK(book.empty());
+}
+
 int main() {
     test_limit_order_no_match();
     test_limit_order_full_fill();
@@ -274,6 +351,7 @@ int main() {
     test_multi_level_fill();
     test_market_order_full_fill();
     test_market_order_partial_fill();
+    test_market_order_empty_book();
     test_cancel_order();
     test_cancel_nonexistent_order();
     test_cancel_partial_fill_level();
@@ -284,6 +362,9 @@ int main() {
     test_market_entrypoint_uses_market_semantics();
     test_limit_entrypoint_uses_limit_semantics();
     test_non_finite_limit_price_is_rejected();
+    test_non_positive_limit_price_is_rejected();
+    test_invalid_side_is_rejected();
+    test_zero_quantity_orders_are_rejected();
 
     std::cout << "All matching tests passed!" << std::endl;
     return 0;
