@@ -49,6 +49,10 @@ struct LatencyResult {
 };
 
 std::size_t parse_positive_count(const std::string& text, std::string_view option) {
+    if (text.empty() || text.front() == '-' || text.front() == '+') {
+        throw std::invalid_argument(std::string(option) + " requires a positive integer");
+    }
+
     std::size_t parsed = 0;
     const unsigned long long value = std::stoull(text, &parsed);
     if (parsed != text.size() || value == 0 ||
