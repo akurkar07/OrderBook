@@ -32,9 +32,13 @@ target_link_libraries(test_price_level PRIVATE orderbook_lib)
 add_executable(test_matching tests/test_matching.cpp)
 target_link_libraries(test_matching PRIVATE orderbook_lib)
 
+add_executable(test_robustness tests/test_robustness.cpp)
+target_link_libraries(test_robustness PRIVATE orderbook_lib)
+
 add_test(NAME test_order_book COMMAND test_order_book)
 add_test(NAME test_price_level COMMAND test_price_level)
 add_test(NAME test_matching COMMAND test_matching)
+add_test(NAME test_robustness COMMAND test_robustness)
 
 # Benchmarks
 add_executable(benchmark_order_book benchmarks/benchmark_order_book.cpp)
