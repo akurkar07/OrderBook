@@ -1,15 +1,32 @@
 #include "price_level.h"
 
 #include <algorithm>
-#include <cassert>
+#include <cmath>
 #include <limits>
 #include <stdexcept>
 
 namespace orderbook {
+namespace {
 
-PriceLevel::PriceLevel(Price price) : price_(price), total_quantity_(0) {}
+bool is_valid_side(Side side) {
+    return side == Side::Buy || side == Side::Sell;
+}
+
+} // namespace
+
+PriceLevel::PriceLevel(Price price) : price_(price), total_quantity_(0) {
+    if (!std::isfinite(price_) || price_ <= 0.0) {
+        throw std::invalid_argument("price level price must be finite and positive");
+    }
+}
 
 void PriceLevel::add_order(const Order& order) {
+    if (!is_valid_side(order.side) || order.type != OrderType::Limit ||
+        order.quantity == 0 || !std::isfinite(order.price) ||
+        order.price != price_) {
+        throw std::invalid_argument("order is invalid for this price level");
+    }
+
     if (order.quantity > std::numeric_limits<Quantity>::max() - total_quantity_) {
         throw std::overflow_error("price level quantity overflow");
     }
@@ -30,14 +47,12 @@ bool PriceLevel::remove_order(OrderID order_id) {
 }
 
 void PriceLevel::reduce_quantity(Quantity amount) {
-    assert(!queue_.empty());
     if (queue_.empty()) {
-        return;
+        throw std::out_of_range("cannot reduce an empty price level");
     }
 
-    assert(amount <= queue_.front().quantity);
     if (amount > queue_.front().quantity) {
-        return;
+        throw std::invalid_argument("reduction exceeds front order quantity");
     }
 
     queue_.front().quantity -= amount;
@@ -57,6 +72,10 @@ Price PriceLevel::price() const {
 }
 
 const Order& PriceLevel::front() const {
+    if (queue_.empty()) {
+        throw std::out_of_range("cannot access the front of an empty price level");
+    }
+
     return queue_.front();
 }
 

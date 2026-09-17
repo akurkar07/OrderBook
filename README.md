@@ -26,6 +26,7 @@ OrderBook/
 │   ├── test_order_book.cpp
 │   ├── test_price_level.cpp
 │   ├── test_matching.cpp
+│   ├── test_robustness.cpp
 │   └── test_utils.h
 └── benchmarks/
     └── benchmark_order_book.cpp
@@ -65,7 +66,8 @@ cd build
 - **Deterministic**: The same order sequence produces the same fill sequence
 - **Active order IDs**: Duplicate IDs are rejected while the original order is still resting
 - **Order validation**: Orders require a valid buy/sell side and non-zero quantity; limit prices must also be finite and strictly positive
-- **Quantity accounting**: Price-level aggregate quantity overflow is detected before the level is mutated
+- **Price-level invariants**: A level has a finite positive price and accepts only valid limit orders at exactly that price
+- **Quantity accounting**: Price-level aggregate quantity overflow is rejected before mutation; `OrderBook` rejects an order that would overflow a resting level instead of leaking an internal exception
 
 ## Milestones
 

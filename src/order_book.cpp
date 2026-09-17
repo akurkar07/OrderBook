@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <iterator>
+#include <limits>
 
 namespace orderbook {
 namespace {
@@ -20,13 +21,54 @@ bool is_valid_market_order(const Order& order) {
     return is_valid_side(order.side) && order.quantity > 0;
 }
 
+bool can_rest_limit_remainder(const Order& order,
+                              const std::map<Price, PriceLevel>& buy_levels,
+                              const std::map<Price, PriceLevel>& sell_levels) {
+    const auto& same_side_levels =
+        order.side == Side::Buy ? buy_levels : sell_levels;
+    const auto same_level = same_side_levels.find(order.price);
+    if (same_level == same_side_levels.end()) {
+        return true;
+    }
+
+    Quantity remaining = order.quantity;
+
+    if (order.side == Side::Buy) {
+        for (auto it = sell_levels.begin();
+             it != sell_levels.end() && it->first <= order.price && remaining > 0;
+             ++it) {
+            const Quantity available = it->second.total_quantity();
+            if (available >= remaining) {
+                remaining = 0;
+                break;
+            }
+            remaining -= available;
+        }
+    } else {
+        for (auto it = buy_levels.rbegin();
+             it != buy_levels.rend() && it->first >= order.price && remaining > 0;
+             ++it) {
+            const Quantity available = it->second.total_quantity();
+            if (available >= remaining) {
+                remaining = 0;
+                break;
+            }
+            remaining -= available;
+        }
+    }
+
+    return remaining <= std::numeric_limits<Quantity>::max() -
+                            same_level->second.total_quantity();
+}
+
 } // namespace
 
 OrderBook::OrderBook() : next_fill_id_(0) {}
 
 Fills OrderBook::place_limit_order(const Order& order) {
     if (!is_valid_limit_order(order) ||
-        order_id_to_price_.find(order.id) != order_id_to_price_.end()) {
+        order_id_to_price_.find(order.id) != order_id_to_price_.end() ||
+        !can_rest_limit_remainder(order, buy_levels_, sell_levels_)) {
         return {};
     }
 
