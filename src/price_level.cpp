@@ -2,12 +2,18 @@
 
 #include <algorithm>
 #include <cassert>
+#include <limits>
+#include <stdexcept>
 
 namespace orderbook {
 
 PriceLevel::PriceLevel(Price price) : price_(price), total_quantity_(0) {}
 
 void PriceLevel::add_order(const Order& order) {
+    if (order.quantity > std::numeric_limits<Quantity>::max() - total_quantity_) {
+        throw std::overflow_error("price level quantity overflow");
+    }
+
     queue_.push_back(order);
     total_quantity_ += order.quantity;
 }
