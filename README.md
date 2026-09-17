@@ -64,6 +64,8 @@ cd build
 - **Order ID lookup**: `std::unordered_map` for O(1) average price-level lookup during cancellation, followed by a linear scan within that level
 - **Deterministic**: The same order sequence produces the same fill sequence
 - **Active order IDs**: Duplicate IDs are rejected while the original order is still resting
+- **Order validation**: Orders require a valid buy/sell side and non-zero quantity; limit prices must also be finite and strictly positive
+- **Quantity accounting**: Price-level aggregate quantity overflow is detected before the level is mutated
 
 ## Milestones
 
