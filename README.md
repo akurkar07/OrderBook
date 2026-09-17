@@ -112,7 +112,7 @@ Custom counts are also supported:
 - [x] Naive reference implementation (vector-based)
 - [x] Correctness verification: same sequence → same fills
 - [x] Benchmark harness: throughput and latency
-- [x] Performance baseline harness
+- [ ] Performance baseline
 
 ### V3: Optimization & Polish
 - [ ] Memory pool allocator
