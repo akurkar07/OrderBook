@@ -25,7 +25,8 @@ OrderBook/
 ├── tests/
 │   ├── test_order_book.cpp
 │   ├── test_price_level.cpp
-│   └── test_matching.cpp
+│   ├── test_matching.cpp
+│   └── test_utils.h
 └── benchmarks/
     └── benchmark_order_book.cpp
 ```
@@ -46,6 +47,8 @@ make -j$(nproc)
 cd build
 ctest --output-on-failure
 ```
+
+The test checks remain active in Release builds and do not depend on the standard `assert()` macro.
 
 ## Run Benchmarks
 
