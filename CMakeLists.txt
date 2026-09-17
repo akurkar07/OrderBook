@@ -49,4 +49,7 @@ add_test(NAME test_reference_order_book COMMAND test_reference_order_book)
 
 # Benchmarks
 add_executable(benchmark_order_book benchmarks/benchmark_order_book.cpp)
+target_include_directories(benchmark_order_book PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/reference
+)
 target_link_libraries(benchmark_order_book PRIVATE orderbook_lib)
