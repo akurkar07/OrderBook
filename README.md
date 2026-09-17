@@ -22,11 +22,14 @@ OrderBook/
 │   ├── price_level.cpp
 │   ├── order.h
 │   └── types.h
+├── reference/
+│   └── reference_order_book.h
 ├── tests/
 │   ├── test_order_book.cpp
 │   ├── test_price_level.cpp
 │   ├── test_matching.cpp
 │   ├── test_robustness.cpp
+│   ├── test_reference_order_book.cpp
 │   └── test_utils.h
 └── benchmarks/
     └── benchmark_order_book.cpp
@@ -49,7 +52,7 @@ cd build
 ctest --output-on-failure
 ```
 
-The test checks remain active in Release builds and do not depend on the standard `assert()` macro.
+The test checks remain active in Release builds and do not depend on the standard `assert()` macro. The reference differential test also compares the optimized book against a deliberately simple vector-based model across deterministic randomized order sequences.
 
 ## Run Benchmarks
 
@@ -68,6 +71,7 @@ cd build
 - **Order validation**: Orders require a valid buy/sell side and non-zero quantity; limit prices must also be finite and strictly positive
 - **Price-level invariants**: A level has a finite positive price and accepts only valid limit orders at exactly that price
 - **Quantity accounting**: Price-level aggregate quantity overflow is rejected before mutation; `OrderBook` rejects an order that would overflow a resting level instead of leaking an internal exception
+- **Reference verification**: A flat-vector reference implementation scans for the best eligible resting order on every fill so its structure is independent from the optimized engine
 
 ## Milestones
 
@@ -79,8 +83,8 @@ cd build
 - [x] Deterministic test suite
 
 ### V2: Verification & Benchmarking
-- [ ] Naive reference implementation (vector-based)
-- [ ] Correctness verification: same sequence → same fills
+- [x] Naive reference implementation (vector-based)
+- [x] Correctness verification: same sequence → same fills
 - [ ] Benchmark harness: throughput and latency
 - [ ] Performance baseline
 
