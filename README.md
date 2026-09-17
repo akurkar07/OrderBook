@@ -1,6 +1,6 @@
 # OrderBook
 
-A C++ limit order book engine with price-time priority matching, deterministic tests, and a benchmark harness.
+A C++ limit order book engine with price-time priority matching, deterministic tests, differential verification, and a benchmark harness.
 
 ## Overview
 
@@ -61,6 +61,31 @@ cd build
 ./benchmark_order_book
 ```
 
+The default benchmark runs 1,000,000 optimized operations for each throughput workload, samples 100,000 operations per latency workload, and compares the optimized engine with the reference implementation over 10,000 identical operations.
+
+Measured workloads:
+
+- limit order placement throughput
+- market order matching throughput
+- cancellation throughput
+- p50, p99 and p999 latency for each workload
+- latency histograms in nanoseconds
+- optimized vs reference throughput and relative speedup
+
+Throughput runs deliberately exclude setup and per-operation timing overhead. Latency samples include `steady_clock` measurement overhead, so absolute values are machine-dependent.
+
+For a shorter CI or smoke run:
+
+```bash
+./benchmark_order_book --quick
+```
+
+Custom counts are also supported:
+
+```bash
+./benchmark_order_book --orders 1000000 --latency-samples 100000 --reference-orders 10000
+```
+
 ## Design Decisions
 
 - **Price levels**: `std::map` for O(log N) price lookup
@@ -72,6 +97,7 @@ cd build
 - **Price-level invariants**: A level has a finite positive price and accepts only valid limit orders at exactly that price
 - **Quantity accounting**: Price-level aggregate quantity overflow is rejected before mutation; `OrderBook` rejects an order that would overflow a resting level instead of leaking an internal exception
 - **Reference verification**: A flat-vector reference implementation scans for the best eligible resting order on every fill so its structure is independent from the optimized engine
+- **Benchmark methodology**: Bulk throughput and per-operation latency are measured separately to avoid clock sampling distorting the throughput figures
 
 ## Milestones
 
@@ -85,7 +111,7 @@ cd build
 ### V2: Verification & Benchmarking
 - [x] Naive reference implementation (vector-based)
 - [x] Correctness verification: same sequence → same fills
-- [ ] Benchmark harness: throughput and latency
+- [x] Benchmark harness: throughput and latency
 - [ ] Performance baseline
 
 ### V3: Optimization & Polish
