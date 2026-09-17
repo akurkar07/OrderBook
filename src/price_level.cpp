@@ -1,12 +1,19 @@
 #include "price_level.h"
 
 #include <algorithm>
+#include <cassert>
+#include <limits>
+#include <stdexcept>
 
 namespace orderbook {
 
 PriceLevel::PriceLevel(Price price) : price_(price), total_quantity_(0) {}
 
 void PriceLevel::add_order(const Order& order) {
+    if (order.quantity > std::numeric_limits<Quantity>::max() - total_quantity_) {
+        throw std::overflow_error("price level quantity overflow");
+    }
+
     queue_.push_back(order);
     total_quantity_ += order.quantity;
 }
@@ -23,11 +30,18 @@ bool PriceLevel::remove_order(OrderID order_id) {
 }
 
 void PriceLevel::reduce_quantity(Quantity amount) {
-    // Reduce quantity of front order (used during matching)
-    if (!queue_.empty()) {
-        queue_.front().quantity -= amount;
-        total_quantity_ -= amount;
+    assert(!queue_.empty());
+    if (queue_.empty()) {
+        return;
     }
+
+    assert(amount <= queue_.front().quantity);
+    if (amount > queue_.front().quantity) {
+        return;
+    }
+
+    queue_.front().quantity -= amount;
+    total_quantity_ -= amount;
 }
 
 bool PriceLevel::empty() const {
@@ -43,10 +57,6 @@ Price PriceLevel::price() const {
 }
 
 const Order& PriceLevel::front() const {
-    return queue_.front();
-}
-
-Order& PriceLevel::front() {
     return queue_.front();
 }
 

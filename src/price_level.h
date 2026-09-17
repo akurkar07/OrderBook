@@ -19,7 +19,6 @@ public:
     Price price() const;
 
     const Order& front() const;
-    Order& front();
 
 private:
     Price price_;

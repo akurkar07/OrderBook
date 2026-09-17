@@ -10,27 +10,25 @@ The central research question is: **How do data structure choices and memory lay
 
 ## Architecture
 
-```
+```text
 OrderBook/
 ├── CMakeLists.txt
 ├── README.md
 ├── LICENSE
 ├── src/
-│   ├── order_book.h      # Core OrderBook class
+│   ├── order_book.h
 │   ├── order_book.cpp
-│   ├── price_level.h     # PriceLevel with FIFO queue
+│   ├── price_level.h
 │   ├── price_level.cpp
-│   ├── order.h           # Order struct and types
-│   └── types.h           # Common typedefs
+│   ├── order.h
+│   └── types.h
 ├── tests/
 │   ├── test_order_book.cpp
 │   ├── test_price_level.cpp
-│   └── test_matching.cpp
-├── benchmarks/
-│   ├── benchmark_order_book.cpp
-│   └── reference_book.h  # Naive reference implementation
-└── scripts/
-    └── run_benchmarks.sh
+│   ├── test_matching.cpp
+│   └── test_utils.h
+└── benchmarks/
+    └── benchmark_order_book.cpp
 ```
 
 ## Build
@@ -50,29 +48,33 @@ cd build
 ctest --output-on-failure
 ```
 
+The test checks remain active in Release builds and do not depend on the standard `assert()` macro.
+
 ## Run Benchmarks
 
 ```bash
 cd build
-./benchmarks/benchmark_order_book
+./benchmark_order_book
 ```
 
 ## Design Decisions
 
-- **Price levels**: `std::map` (red-black tree) for O(log N) price lookup
-- **Orders per level**: `std::list` for O(1) FIFO insertion and cancellation
-- **Order ID lookup**: `std::unordered_map` for O(1) cancellation
-- **Deterministic**: Same order sequence always produces same fill sequence
-- **No dynamic memory in hot path**: Pre-allocated pools for orders (stretch goal)
+- **Price levels**: `std::map` for O(log N) price lookup
+- **Orders per level**: `std::list` for FIFO insertion and stable order storage
+- **Order ID lookup**: `std::unordered_map` for O(1) average price-level lookup during cancellation, followed by a linear scan within that level
+- **Deterministic**: The same order sequence produces the same fill sequence
+- **Active order IDs**: Duplicate IDs are rejected while the original order is still resting
+- **Order validation**: Orders require a valid buy/sell side and non-zero quantity; limit prices must also be finite and strictly positive
+- **Quantity accounting**: Price-level aggregate quantity overflow is detected before the level is mutated
 
 ## Milestones
 
 ### V1: Core Matching Engine
-- [ ] OrderBook class with add/cancel/match
-- [ ] PriceLevel with FIFO queue
-- [ ] Limit order matching
-- [ ] Market order matching
-- [ ] Deterministic test suite
+- [x] OrderBook class with add/cancel/match
+- [x] PriceLevel with FIFO queue
+- [x] Limit order matching
+- [x] Market order matching
+- [x] Deterministic test suite
 
 ### V2: Verification & Benchmarking
 - [ ] Naive reference implementation (vector-based)

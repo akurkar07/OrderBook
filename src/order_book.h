@@ -28,7 +28,7 @@ private:
     // Sell levels: sorted ascending, best sell = lowest price (begin)
     std::map<Price, PriceLevel> sell_levels_;
 
-    // Order ID to price level lookup for O(1) cancellation
+    // Active order lookup for average O(1) price-level discovery during cancellation
     std::unordered_map<OrderID, Price> order_id_to_price_;
     std::unordered_map<OrderID, bool> order_is_buy_;  // true if buy, false if sell
 
