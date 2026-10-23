@@ -1,0 +1,83 @@
+OrderBook benchmark harness
+===========================
+optimized throughput operations: 1000000
+latency samples per workload:      100000
+reference comparison operations:  10000
+
+Optimized OrderBook throughput
+  limit placement                2402314 ops/s     416.27 ms  checksum=2
+  market matching               11268291 ops/s      88.74 ms  checksum=2000000
+  cancellation                   8024557 ops/s     124.62 ms  checksum=1000000
+
+Optimized OrderBook latency distributions
+limit placement
+  p50 : 376 ns
+  p99 : 626 ns
+  p999: 5271 ns
+  mean: 493.3 ns
+  histogram:
+           0-     100 ns :        0  (0.00%)
+         101-     250 ns :     1442  (1.44%)
+         251-     500 ns :    93897  (93.90%)
+         501-    1000 ns :     4513  (4.51%)
+        1001-    2500 ns :       41  (0.04%)
+        2501-    5000 ns :        4  (0.00%)
+        5001-   10000 ns :       38  (0.04%)
+       10001-   25000 ns :        8  (0.01%)
+       25001-   50000 ns :       37  (0.04%)
+       50001-  100000 ns :       13  (0.01%)
+      100001-  250000 ns :        3  (0.00%)
+      250001- 1000000 ns :        1  (0.00%)
+    >          1000000 ns :        3  (0.00%)
+  checksum: 1
+
+market matching
+  p50 : 83 ns
+  p99 : 160 ns
+  p999: 436 ns
+  mean: 97.4 ns
+  histogram:
+           0-     100 ns :    93499  (93.50%)
+         101-     250 ns :     6241  (6.24%)
+         251-     500 ns :      193  (0.19%)
+         501-    1000 ns :       32  (0.03%)
+        1001-    2500 ns :        2  (0.00%)
+        2501-    5000 ns :        6  (0.01%)
+        5001-   10000 ns :        3  (0.00%)
+       10001-   25000 ns :       15  (0.01%)
+       25001-   50000 ns :        7  (0.01%)
+       50001-  100000 ns :        1  (0.00%)
+      100001-  250000 ns :        0  (0.00%)
+      250001- 1000000 ns :        1  (0.00%)
+    >          1000000 ns :        0  (0.00%)
+  checksum: 100000
+
+cancellation
+  p50 : 146 ns
+  p99 : 326 ns
+  p999: 575 ns
+  mean: 158.3 ns
+  histogram:
+           0-     100 ns :        0  (0.00%)
+         101-     250 ns :    97877  (97.88%)
+         251-     500 ns :     1893  (1.89%)
+         501-    1000 ns :      178  (0.18%)
+        1001-    2500 ns :        4  (0.00%)
+        2501-    5000 ns :       11  (0.01%)
+        5001-   10000 ns :       12  (0.01%)
+       10001-   25000 ns :       12  (0.01%)
+       25001-   50000 ns :       13  (0.01%)
+       50001-  100000 ns :        0  (0.00%)
+      100001-  250000 ns :        0  (0.00%)
+      250001- 1000000 ns :        0  (0.00%)
+    >          1000000 ns :        0  (0.00%)
+  checksum: 100000
+
+Optimized vs reference throughput (same workload/count)
+  workload                     OrderBook     Reference     speedup
+  limit placement                3802915        192707       19.73x
+  market matching               12924305       5410067        2.39x
+  cancellation                   9332084        293198       31.83x
+
+Note: throughput runs exclude setup and per-operation timing overhead.
+Latency numbers include steady_clock measurement overhead and are machine-dependent.

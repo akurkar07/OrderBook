@@ -86,6 +86,30 @@ Custom counts are also supported:
 ./benchmark_order_book --orders 1000000 --latency-samples 100000 --reference-orders 10000
 ```
 
+## Results
+
+Measured 23 Oct 2026 with the default harness (1,000,000 ops per throughput workload, 100,000 latency samples, 10,000-op reference comparison), three consecutive runs, Release build. The numbers below are the range across those runs.
+
+Machine: shared 2-vCPU cloud VM, Intel Xeon @ 2.80 GHz, Ubuntu 24.04, g++ 13.3.0, CMake 3.28, `-O3`. This is a noisy environment; a dedicated desktop core will be faster and tighter, so treat these as a baseline, not a ceiling.
+
+| Workload | Throughput (ops/s) | p50 | p99 | p999 |
+|---|---|---|---|---|
+| Limit placement | 2.0M–2.4M | 220–376 ns | 495–626 ns | 1.0–5.3 µs |
+| Market matching | 10.9M–12.6M | 83–84 ns | 140–175 ns | 315–436 ns |
+| Cancellation | 8.0M–8.4M | 146–152 ns | 326–490 ns | 575–952 ns |
+
+Optimised engine vs the flat-vector reference, same 10,000-op workload:
+
+| Workload | Speedup |
+|---|---|
+| Limit placement | 19.7x–22.1x |
+| Market matching | 2.1x–2.4x |
+| Cancellation | 31.8x–38.3x |
+
+Market matching gains least because the reference's best-order scan is cheap when the book is shallow; limit and cancel gain most because the reference does a full linear scan where the engine does an `std::map` lookup plus an `unordered_map` hit. Latency samples include `steady_clock` overhead (tens of ns on this machine), so p50 figures overstate the true cost.
+
+To reproduce: `./benchmark_order_book` from the build directory; raw outputs for the runs above are in `benchmarks/results/`.
+
 ## Design Decisions
 
 - **Price levels**: `std::map` for O(log N) price lookup
@@ -112,7 +136,7 @@ Custom counts are also supported:
 - [x] Naive reference implementation (vector-based)
 - [x] Correctness verification: same sequence → same fills
 - [x] Benchmark harness: throughput and latency
-- [ ] Performance baseline
+- [x] Performance baseline
 
 ### V3: Optimization & Polish
 - [ ] Memory pool allocator
